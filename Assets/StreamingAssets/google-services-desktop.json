@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "602490008553",
+    "firebase_url": "https://bossraid-707f5-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "bossraid-707f5",
+    "storage_bucket": "bossraid-707f5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:602490008553:android:513d10795e135d74f71178",
+        "android_client_info": {
+          "package_name": "com.UnityTechnologies.com.unity.template.urpblank"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8AH_CtiIYWH8L1vGGDmkla84zT31Aczo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

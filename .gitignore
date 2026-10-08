@@ -106,3 +106,9 @@ InitTestScene*.unity*
 /[Aa]ssets/[Ss]ceneDependencyCache*
 
 /[Aa]ssets/[Ii]mports
+/[Aa]ssets/Photon/PhotonUnityNetworking/Resources/PhotonServerSettings.asset
+/[Aa]ssets/Photon/PhotonUnityNetworking/Resources/PhotonServerSettings.asset.meta
+/[Aa]ssets/Firebase/Plugins/x86_64/FirebaseCppApp-13_17_0.bundle
+/[Aa]ssets/Firebase/Plugins/x86_64/FirebaseCppApp-13_17_0.bundle.meta
+
+
