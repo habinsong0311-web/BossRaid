@@ -1,11 +1,11 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
 
 /*///////////////////////////////////////////
-                tInputInfo
-기능 : 이번 프레임의 연속 입력인 이동 방향과 마우스 변위 전달
+                tInputInfo / InputManager
+기능 : Inspector의 액션을 읽고 연속 입력과 C# 버튼 이벤트 전달
+       포커스 해제·비활성화 시 입력 취소
  *///////////////////////////////////////////
 public struct tInputInfo
 {
@@ -13,11 +13,6 @@ public struct tInputInfo
     public Vector2 Delta;
 }
 
-/*///////////////////////////////////////////
-                InputManager
-기능 : Inspector에서 연결한 InputActionReference를 읽고 연속 입력은 값으로 노출
-       버튼 입력은 R3 이벤트로 전달하며 커서 잠금 관리
- *///////////////////////////////////////////
 [DefaultExecutionOrder(-100)]
 [DisallowMultipleComponent]
 public sealed class InputManager : MonoBehaviour
@@ -25,9 +20,7 @@ public sealed class InputManager : MonoBehaviour
     public static InputManager m_Instance { get; private set; }
 
     public event Action OnJumpButtonPressed;
-
     public event Action OnInputCanceled;
-
     public event Action OnRunButtonStarted;
     public event Action OnRunButtonReleased;
     public event Action OnStrafeButtonStarted;
@@ -43,64 +36,62 @@ public sealed class InputManager : MonoBehaviour
     private InputAction m_refMoveAction;
     private InputAction m_refDeltaAction;
     private InputAction m_refJumpAction;
-    private InputAction m_refChargeAction;
     private InputAction m_refRunAction;
     private InputAction m_refStrafeAction;
     private tInputInfo m_tInputInfo;
-    public tInputInfo InputInfo => m_tInputInfo;
+    private bool m_bFocused = true;
 
+    public tInputInfo InputInfo => m_tInputInfo;
+    public bool HasGameplayInput => m_bFocused && Time.timeScale > 0f;
+    public bool IsRunHeld => HasGameplayInput && m_refRunAction.IsPressed();
+    public bool IsStrafeHeld => HasGameplayInput && m_refStrafeAction.IsPressed();
 
     private void Awake()
     {
         if (m_Instance != null && m_Instance != this)
         {
+            enabled = false;
             Destroy(gameObject);
             return;
         }
 
         m_Instance = this;
         DontDestroyOnLoad(gameObject);
-
-
         m_refMoveAction = m_refMoveActionReference.action;
         m_refDeltaAction = m_refDeltaActionReference.action;
         m_refJumpAction = m_refJumpActionReference.action;
         m_refRunAction = m_refRunActionReference.action;
         m_refStrafeAction = m_refStrafeActionReference.action;
-
-        m_tInputInfo = default;
-
     }
 
     private void OnEnable()
     {
-        
+        if (m_Instance != this)
+            return;
+
         m_refJumpAction.performed += OnJumpButtonPerformed;
         m_refRunAction.started += OnRunButtonStartedPerformed;
         m_refRunAction.canceled += OnRunButtonCanceledPerformed;
         m_refStrafeAction.started += OnStrafeButtonStartedPerformed;
         m_refStrafeAction.canceled += OnStrafeButtonCanceledPerformed;
-        EnableActions();
 
+        EnableActions();
+        m_bFocused = true;
+        CancelInput();
     }
 
     private void Update()
     {
-       
+        if (HasGameplayInput == false)
+            return;
+
         m_tInputInfo.MoveDir = m_refMoveAction.ReadValue<Vector2>();
-        Vector2 vDelta = m_refDeltaAction.ReadValue<Vector2>();
-
-        if (vDelta.sqrMagnitude > 0f)
-        {
-            vDelta = Vector2.zero;
-        }
-
-        m_tInputInfo.Delta = vDelta;
+        m_tInputInfo.Delta = m_refDeltaAction.ReadValue<Vector2>();
     }
 
     private void OnDisable()
     {
-        if (m_Instance != this || m_refMoveAction == null)
+        if (m_Instance != this)
             return;
 
         m_refJumpAction.performed -= OnJumpButtonPerformed;
@@ -109,54 +100,55 @@ public sealed class InputManager : MonoBehaviour
         m_refStrafeAction.started -= OnStrafeButtonStartedPerformed;
         m_refStrafeAction.canceled -= OnStrafeButtonCanceledPerformed;
         DisableActions();
-
         CancelInput();
     }
 
+    private void OnDestroy()
+    {
+        if (m_Instance == this)
+            m_Instance = null;
+    }
+
+    private void OnApplicationFocus(bool _bFocused)
+    {
+        m_bFocused = _bFocused;
+        if (_bFocused == false)
+            CancelInput();
+    }
 
     private void OnJumpButtonPerformed(InputAction.CallbackContext _tContext)
     {
-        OnJumpButtonPressed?.Invoke();
+        if (HasGameplayInput)
+            OnJumpButtonPressed?.Invoke();
     }
-
 
     private void OnRunButtonStartedPerformed(InputAction.CallbackContext _tContext)
     {
-        OnRunButtonStarted?.Invoke();
+        if (HasGameplayInput)
+            OnRunButtonStarted?.Invoke();
     }
 
-    private void OnRunButtonCanceledPerformed(InputAction.CallbackContext _tContext)
-    {
-        OnRunButtonReleased?.Invoke();
-    }
-
+    private void OnRunButtonCanceledPerformed(InputAction.CallbackContext _tContext) => OnRunButtonReleased?.Invoke();
     private void OnStrafeButtonStartedPerformed(InputAction.CallbackContext _tContext)
     {
-        OnStrafeButtonStarted?.Invoke();
+        if (HasGameplayInput)
+            OnStrafeButtonStarted?.Invoke();
     }
-
-    private void OnStrafeButtonCanceledPerformed(InputAction.CallbackContext _tContext)
-    {
-        OnStrafeButtonReleased?.Invoke();
-    }
-
-    private void OnUnlockCursorPerformed(InputAction.CallbackContext _tContext)
-    {
-        CancelInput();
-    }
+    private void OnStrafeButtonCanceledPerformed(InputAction.CallbackContext _tContext) => OnStrafeButtonReleased?.Invoke();
 
     private void CancelInput()
     {
         m_tInputInfo = default;
+        OnRunButtonReleased?.Invoke();
+        OnStrafeButtonReleased?.Invoke();
+        OnInputCanceled?.Invoke();
     }
-
 
     private void EnableActions()
     {
         m_refMoveAction.Enable();
         m_refDeltaAction.Enable();
         m_refJumpAction.Enable();
-        m_refChargeAction.Enable();
         m_refRunAction.Enable();
         m_refStrafeAction.Enable();
     }
@@ -166,7 +158,6 @@ public sealed class InputManager : MonoBehaviour
         m_refMoveAction.Disable();
         m_refDeltaAction.Disable();
         m_refJumpAction.Disable();
-        m_refChargeAction.Disable();
         m_refRunAction.Disable();
         m_refStrafeAction.Disable();
     }
