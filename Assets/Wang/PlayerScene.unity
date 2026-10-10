@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 120828988}
   - component: {fileID: 120828987}
   - component: {fileID: 120828986}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -355,7 +355,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 657029518}
-  - component: {fileID: 657029519}
   m_Layer: 6
   m_Name: PlayerModel
   m_TagString: Untagged
@@ -582,28 +581,6 @@ Transform:
   - {fileID: 9161220865423806574}
   m_Father: {fileID: 2795648065516152880}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &657029519
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 657029517}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 643e130d300582f49ab24a41475e311f, type: 3}
-  m_Controller: {fileID: 9100000, guid: b4796c666ae22244c83c1fa9151bf679, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1008757500
 GameObject:
   m_ObjectHideFlags: 0
@@ -12037,6 +12014,7 @@ GameObject:
   - component: {fileID: 2795648065523925502}
   - component: {fileID: 2795648065523925501}
   - component: {fileID: 2795648065523925503}
+  - component: {fileID: 2795648065523925504}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -12113,9 +12091,31 @@ MonoBehaviour:
   m_fJumpSpeed: 5
   m_iGroundLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 128
   m_fRotateSensitivity: 3
   m_fRotateSpeed: 90
+--- !u!95 &2795648065523925504
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2795648065516518480}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 643e130d300582f49ab24a41475e311f, type: 3}
+  m_Controller: {fileID: 9100000, guid: b4796c666ae22244c83c1fa9151bf679, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!137 &2802273211023890593
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
