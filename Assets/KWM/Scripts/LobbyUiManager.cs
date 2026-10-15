@@ -189,4 +189,57 @@ public class LobbyUiManager : MonoBehaviourPunCallbacks
 
         Debug.Log($"[Lobby] 포톤 실시간 방 목록 동기화 완료! (현재 활성화된 방 개수: {contentParent.childCount}개)");
     }
+
+
+    [Header("클래스 선택 (임시 보관함)")]
+
+    private int currentSelectedClassIndex = -1;
+
+    public void SetTemporaryClassIndex(int index)
+    {
+        currentSelectedClassIndex = index;
+        
+        Debug.Log($"[Lobby] 임시 직업 선택 변경: {index}번 클래스 픽업 중...");
+    }
+
+
+    public void OnClickSaveClassType()
+    {
+        // 만약 플레이어가 아무것도 안 고르고 Save를 눌렀을 때 예외 방어
+        if (currentSelectedClassIndex == -1)
+        {
+            Debug.LogWarning("[Lobby] 직업을 먼저 선택한 후에 Save 버튼을 눌러주세요!");
+            
+            return;
+        }
+
+        // 포톤 서버 장부에 최종 확정 번호 등록 (Index)
+        ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable
+        {
+            { "ClassType", currentSelectedClassIndex }
+        };
+
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+
+        Debug.Log($"[네트워크] 서버 장부 최종 등록 완료! 내 직업 번호: {currentSelectedClassIndex}");
+    }
+
+
+    [Header("Class Selection Panel Setup")]
+    [SerializeField] private GameObject classSelectPanel;
+
+    public void OnClickCloseClassSelectPanel()
+    {
+        if (classSelectPanel != null)
+        {
+            classSelectPanel.SetActive(false); // 클래스 선택창 끄기
+        }
+
+        if (lobbyPanel != null)
+        {
+            lobbyPanel.SetActive(true); // 기존 로비 패널 다시 켜기
+        }
+
+        Debug.Log("[Lobby] 클래스 선택창을 닫고 로비 패널로 돌아갑니다.");
+    }
 }
