@@ -149,7 +149,7 @@ public class LobbyUiManager : MonoBehaviourPunCallbacks
     {
         Debug.Log("[Lobby] 방 생성성공! 대기 공간(CampScene)으로 이동합니다.");
         
-        PhotonNetwork.LoadLevel("CampScene");
+        PhotonNetwork.LoadLevel("GameScene");
     }
 
 
