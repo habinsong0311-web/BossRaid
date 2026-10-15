@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &930000200
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6192562752934148917, guid: faab9dce52b5b20438794b42555ccd5e, type: 3}
+      propertyPath: m_Name
+      value: PlayerLightningBolt
+      objectReference: {fileID: 0}
+    - target: {fileID: 6192562752934148917, guid: faab9dce52b5b20438794b42555ccd5e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7824541553539761767, guid: faab9dce52b5b20438794b42555ccd5e, type: 3}
+      propertyPath: hitbox
+      value: 
+      objectReference: {fileID: 930000202}
+    - target: {fileID: 5393337692900951447, guid: faab9dce52b5b20438794b42555ccd5e, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: faab9dce52b5b20438794b42555ccd5e, type: 3}
+--- !u!114 &930000201 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7824541553539761767, guid: faab9dce52b5b20438794b42555ccd5e, type: 3}
+  m_PrefabInstance: {fileID: 930000200}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 649d2f5586f2bbe4991e5832d1b64b6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LightningBolt
+--- !u!135 &930000202 stripped
+SphereCollider:
+  m_CorrespondingSourceObject: {fileID: 5393337692900951447, guid: faab9dce52b5b20438794b42555ccd5e, type: 3}
+  m_PrefabInstance: {fileID: 930000200}
+  m_PrefabAsset: {fileID: 0}

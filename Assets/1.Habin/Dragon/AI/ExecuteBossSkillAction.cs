@@ -24,6 +24,9 @@ public partial class ExecuteBossSkillAction : Action
         if (Self == null || Self.Value == null || Target == null || Target.Value == null || SelectedSkill == null || LastSkill == null)
             return Status.Failure;
 
+        if (!Target.Value.TryGetComponent<Player>(out var targetPlayer) || !targetPlayer.IsAlive)
+            return Status.Failure;
+
         slam = Self.Value.GetComponent<DragonSlam>();
         tailWhip = Self.Value.GetComponent<DragonTailWhip>();
         rush = Self.Value.GetComponent<DragonRush>();

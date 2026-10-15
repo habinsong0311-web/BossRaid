@@ -8,7 +8,8 @@ public class DragonTailWhip : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private Transform attackPoint;
     [SerializeField] private HalfCircleTelegraph attackPrefab;
-
+    [SerializeField] private CapsuleCollider tailHitBox;
+    
     [Header("공격 범위")]
     [Min(0.01f)]
     [SerializeField] private float attackRadius = 7f;
@@ -26,9 +27,6 @@ public class DragonTailWhip : MonoBehaviour
 
     [Min(0f)]
     [SerializeField] private float transitionTime = 0.1f;
-
-    [Header("테스트")]
-    [SerializeField] private KeyCode testKey = KeyCode.T;
 
     private HalfCircleTelegraph currentTelegraph;
 
@@ -51,12 +49,6 @@ public class DragonTailWhip : MonoBehaviour
             animator = GetComponent<Animator>();
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(testKey))
-            TailWhip();
-    }
-
     public void TailWhip()
     {
         if (isAttacking)
@@ -76,31 +68,17 @@ public class DragonTailWhip : MonoBehaviour
         CreateTelegraph();
 
         // 공격 모션과 장판 채우기를 동시에 시작합니다.
-        animator.CrossFadeInFixedTime(
-            animationState,
-            transitionTime
-        );
+        animator.CrossFadeInFixedTime(animationState,transitionTime);
 
-        currentTelegraph.Play(
-            preparationTime,
-            OnTelegraphFilled
-        );
+        currentTelegraph.Play(preparationTime,OnTelegraphFilled);
     }
 
     private bool HasRequiredReferences()
     {
-        if (animator != null &&
-            attackPoint != null &&
-            attackPrefab != null)
+        if (animator != null && attackPoint != null && attackPrefab != null)
         {
             return true;
         }
-
-        Debug.LogError(
-            "Animator, Attack Point, Attack Prefab을 연결하세요.",
-            this
-        );
-
         return false;
     }
 
@@ -108,25 +86,15 @@ public class DragonTailWhip : MonoBehaviour
     {
         attackCenter = attackPoint.position;
 
-        float directionY =
-            attackPoint.eulerAngles.y +
-            telegraphDirectionOffset;
+        float directionY = attackPoint.eulerAngles.y + telegraphDirectionOffset;
 
         attackRotation = Quaternion.Euler(0f, directionY, 0f);
 
-        currentTelegraph = Instantiate(
-            attackPrefab,
-            attackCenter + Vector3.up * telegraphHeightOffset,
-            attackRotation
-        );
-
+        currentTelegraph = Instantiate(attackPrefab,attackCenter + Vector3.up * telegraphHeightOffset,attackRotation);
         float diameter = attackRadius * RadiusToDiameter;
-
         currentTelegraph.transform.localScale =
             new Vector3(diameter, 1f, diameter);
     }
-
-    // Animation Event: 꼬리를 휘두르기 직전
     public void TailWhipReady()
     {
         if (!isAttacking || isReady)
@@ -137,7 +105,6 @@ public class DragonTailWhip : MonoBehaviour
 
         TryStartSwing();
     }
-
     private void OnTelegraphFilled()
     {
         if (!isAttacking)
@@ -146,44 +113,33 @@ public class DragonTailWhip : MonoBehaviour
         isFilled = true;
         TryStartSwing();
     }
-
     private void TryStartSwing()
     {
-        if (!isAttacking ||
-            !isReady ||
-            !isFilled ||
-            isSwinging)
+        if (!isAttacking || !isReady || !isFilled || isSwinging)
         {
             return;
         }
 
         isSwinging = true;
 
-        // 몸을 코드로 회전시키지 않고 모션만 재개합니다.
         animator.speed = originalAnimatorSpeed;
     }
-
-    // Animation Event: 꼬리가 타격하는 순간
     public void TailWhipHit()
     {
         if (!isAttacking || !isSwinging || hasHit)
             return;
 
         hasHit = true;
-
-        Debug.Log("뒤쪽 꼬리치기 타격!", this);
-
-        // 이후 attackCenter, attackRotation, attackRadius로
-        // 반원 범위의 데미지를 판정합니다.
+        tailHitBox.GetComponent<AttackDamage>().ResetHits();
+        tailHitBox.enabled = true;
 
         RemoveTelegraph();
     }
-
-    // Animation Event: 공격 모션 종료
     public void TailWhipEnd()
     {
         if (!isAttacking)
             return;
+        tailHitBox.enabled = false;
         CleanupAttack();
     }
 
@@ -198,6 +154,9 @@ public class DragonTailWhip : MonoBehaviour
 
     private void CleanupAttack()
     {
+        if (tailHitBox != null)
+            tailHitBox.enabled = false;
+
         RemoveTelegraph();
 
         if (isAttacking && animator != null)

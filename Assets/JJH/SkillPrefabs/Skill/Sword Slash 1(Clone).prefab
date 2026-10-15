@@ -12,7 +12,11 @@ GameObject:
   - component: {fileID: 766081673794477181}
   - component: {fileID: 6075360313365638656}
   m_Layer: 0
+<<<<<<<< HEAD:Assets/JJH/SkillPrefabs/Skill/LightingVortex.prefab
+  m_Name: LightingVortex
+========
   m_Name: Hit
+>>>>>>>> origin/feat/network:Assets/JJH/SkillPrefabs/Skill/Sword Slash 1(Clone).prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

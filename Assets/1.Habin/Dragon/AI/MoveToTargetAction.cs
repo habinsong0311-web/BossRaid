@@ -38,6 +38,9 @@ public partial class MoveToTargetAction : Action
         if (Self == null || Self.Value == null || Target == null || Target.Value == null || LastSkill == null)
             return Status.Failure;
 
+        if (!Target.Value.TryGetComponent<Player>(out var targetPlayer) || !targetPlayer.IsAlive)
+            return Status.Failure;
+
         ranges = Self.Value.GetComponent<BossRangeSettings>();
         animator = Self.Value.GetComponent<Animator>();
 
@@ -56,6 +59,9 @@ public partial class MoveToTargetAction : Action
     protected override Status OnUpdate()
     {
         if (Self.Value == null || Target.Value == null || ranges == null)
+            return Status.Failure;
+
+        if (!Target.Value.TryGetComponent<Player>(out var targetPlayer) || !targetPlayer.IsAlive)
             return Status.Failure;
 
         Transform boss = Self.Value.transform;

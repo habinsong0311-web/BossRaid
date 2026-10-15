@@ -1,8 +1,10 @@
 using System.Collections;
 using DG.Tweening;
+using Photon.Pun;
 using UnityEngine;
 
-public class DragonRush : MonoBehaviour
+[RequireComponent(typeof(PhotonView))]
+public class DragonRush : MonoBehaviourPun
 {
     private const float Half = 0.5f;
 
@@ -11,6 +13,7 @@ public class DragonRush : MonoBehaviour
     [SerializeField] private Transform bossRoot;
     [SerializeField] private Transform target;
     [SerializeField] private GameObject attackPrefab;
+    [SerializeField] private CapsuleCollider rushHitBox;
 
     [Header("돌진")]
     [Min(0.01f)]
@@ -26,14 +29,11 @@ public class DragonRush : MonoBehaviour
     [Header("장판")]
     [Min(0.01f)]
     [SerializeField] private float rushWidth = 4f;
-
     [SerializeField] private float telegraphHeightOffset = 0.03f;
 
     [Header("애니메이션")]
     [SerializeField] private string preparationState = "Base Layer.Idle";
-
     [SerializeField] private string rushState = "Base Layer.Run";
-
     [SerializeField] private string endState = "Base Layer.Idle";
 
     [Min(0f)]
@@ -47,9 +47,12 @@ public class DragonRush : MonoBehaviour
     private Tween moveTween;
 
     private bool isAttacking;
+    private bool isPreparing;
     private float attackHeight;
     private Vector3 rushDestination;
+
     public bool IsAttacking => isAttacking;
+    private bool HasAuthority => !PhotonNetwork.InRoom || PhotonNetwork.IsMasterClient;
 
     private void Awake()
     {
@@ -59,50 +62,81 @@ public class DragonRush : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(testKey))
+        if (HasAuthority && Input.GetKeyDown(testKey))
             Rush();
+
+        if (!HasAuthority && isPreparing && target != null)
+        {
+            rushDestination = target.position;
+            rushDestination.y = attackHeight;
+
+            UpdateTelegraph(bossRoot.position, rushDestination);
+        }
+    }
+
+    public void SetTarget(Transform newTarget)
+    {
+        target = newTarget;
     }
 
     public void Rush()
     {
-        if (isAttacking)
+        if (!HasAuthority || isAttacking)
             return;
 
-        if (!HasRequiredReferences())
+        if (!HasRequiredReferences() || target == null)
             return;
 
-        isAttacking = true;
-        attackHeight = bossRoot.position.y;
+        int targetViewId = 0;
+
+        if (PhotonNetwork.InRoom)
+        {
+            PhotonView targetView = target.GetComponentInParent<PhotonView>();
+
+            if (targetView == null)
+            {
+                return;
+            }
+
+            targetViewId = targetView.ViewID;
+        }
+
+        BeginPreparation(target.position);
+
+        if (PhotonNetwork.InRoom)
+            photonView.RPC(nameof(ReceiveRushPreparation), RpcTarget.Others, targetViewId, bossRoot.position, bossRoot.rotation, target.position);
 
         rushRoutine = StartCoroutine(RushRoutine());
     }
 
     private bool HasRequiredReferences()
     {
-        if (animator == null ||
-            bossRoot == null ||
-            target == null ||
-            attackPrefab == null)
-        {
-            Debug.LogError(
-                "Animator, Boss Root, Target, Attack Prefab을 연결하세요.",
-                this
-            );
+        if (animator != null && bossRoot != null && attackPrefab != null && rushHitBox != null)
+            return true;
 
-            return false;
-        }
+        return false;
+    }
 
-        return true;
+    private void BeginPreparation(Vector3 targetPosition)
+    {
+        isAttacking = true;
+        isPreparing = true;
+        attackHeight = bossRoot.position.y;
+
+        rushHitBox.enabled = false;
+        rushDestination = targetPosition;
+        rushDestination.y = attackHeight;
+
+        currentTelegraph = Instantiate(attackPrefab);
+
+        UpdateTelegraph(bossRoot.position, rushDestination);
+        PlayAnimation(preparationState);
     }
 
     private IEnumerator RushRoutine()
     {
-        PlayAnimation(preparationState);
-        currentTelegraph = Instantiate(attackPrefab);
-
         float elapsed = 0f;
 
-        // 준비 중에는 타겟을 따라 경로를 갱신합니다.
         while (elapsed < preparationTime)
         {
             if (target == null)
@@ -123,17 +157,20 @@ public class DragonRush : MonoBehaviour
             yield break;
         }
 
-        // 이 시점의 플레이어 위치를 최종 목적지로 고정합니다.
+        // 준비가 끝난 순간의 목적지를 확정합니다.
         UpdateAim();
+        isPreparing = false;
+
+        if (PhotonNetwork.InRoom)
+            photonView.RPC(nameof(ReceiveRushStart), RpcTarget.Others, bossRoot.position, rushDestination);
 
         PlayAnimation(rushState);
 
-        moveTween = bossRoot.DOMove(
-            rushDestination,
-            rushDuration
-        )
-        .SetEase(Ease.Linear)
-        .SetLink(gameObject);
+        rushHitBox.GetComponent<AttackDamage>().ResetHits();
+        rushHitBox.enabled = true;
+
+        // 이 코루틴은 방장 또는 오프라인 테스트에서만 실행됩니다.
+        moveTween = bossRoot.DOMove(rushDestination, rushDuration).SetEase(Ease.Linear).SetLink(gameObject);
 
         yield return moveTween.WaitForCompletion();
 
@@ -144,92 +181,123 @@ public class DragonRush : MonoBehaviour
     {
         Vector3 startPosition = bossRoot.position;
         startPosition.y = attackHeight;
-
         bossRoot.position = startPosition;
 
         rushDestination = target.position;
         rushDestination.y = attackHeight;
 
         Vector3 direction = rushDestination - startPosition;
-        float distance = direction.magnitude;
 
-        float yaw = bossRoot.eulerAngles.y;
-
-        if (distance > minimumTargetDistance)
+        if (direction.sqrMagnitude > minimumTargetDistance * minimumTargetDistance)
         {
-            yaw = Mathf.Atan2(
-                direction.x,
-                direction.z
-            ) * Mathf.Rad2Deg;
+            float yaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+
+            Vector3 angles = bossRoot.eulerAngles;
+            angles.y = yaw;
+            bossRoot.eulerAngles = angles;
         }
 
-        // X·Z 회전은 유지하고 Y축 방향만 변경합니다.
-        Vector3 bossAngles = bossRoot.eulerAngles;
-        bossAngles.y = yaw;
-        bossRoot.eulerAngles = bossAngles;
-
-        // 장판은 수평으로 배치합니다.
-        Quaternion telegraphRotation =
-            Quaternion.Euler(0f, yaw, 0f);
-
-        Vector3 telegraphCenter =
-            (startPosition + rushDestination) * Half;
-
-        telegraphCenter.y =
-            attackHeight + telegraphHeightOffset;
-
-        currentTelegraph.transform.SetPositionAndRotation(
-            telegraphCenter,
-            telegraphRotation
-        );
-
-        // 기본 크기가 1인 장판 기준입니다.
-        currentTelegraph.transform.localScale =
-            new Vector3(rushWidth, 1f, distance);
+        UpdateTelegraph(startPosition, rushDestination);
     }
 
-    private void PlayAnimation(string stateName)
-    {
-        animator.CrossFadeInFixedTime(
-            stateName,
-            transitionTime
-        );
-    }
-
-    private void FinishAttack()
-    {
-        RemoveTelegraph();
-        PlayAnimation(endState);
-
-        moveTween = null;
-        rushRoutine = null;
-        isAttacking = false;
-    }
-
-    private void RemoveTelegraph()
+    private void UpdateTelegraph(Vector3 startPosition, Vector3 destination)
     {
         if (currentTelegraph == null)
             return;
 
-        Destroy(currentTelegraph);
-        currentTelegraph = null;
+        startPosition.y = attackHeight;
+        destination.y = attackHeight;
+
+        Vector3 direction = destination - startPosition;
+        float distance = direction.magnitude;
+        float yaw = bossRoot.eulerAngles.y;
+
+        if (distance > minimumTargetDistance)
+            yaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+
+        Vector3 center = (startPosition + destination) * Half;
+        center.y = attackHeight + telegraphHeightOffset;
+
+        currentTelegraph.transform.SetPositionAndRotation(center, Quaternion.Euler(0f, yaw, 0f));
+        currentTelegraph.transform.localScale = new Vector3(rushWidth, 1f, distance);
+    }
+    [PunRPC]
+    private void ReceiveRushPreparation(int targetViewId, Vector3 bossPosition, Quaternion bossRotation, Vector3 targetPosition, PhotonMessageInfo info)
+    {
+        if (info.Sender != PhotonNetwork.MasterClient || !isActiveAndEnabled)
+            return;
+
+        if (!HasRequiredReferences())
+            return;
+
+        CleanupAttack();
+        bossRoot.SetPositionAndRotation(bossPosition, bossRotation);
+
+        PhotonView targetView = PhotonView.Find(targetViewId);
+        target = targetView != null ? targetView.transform : null;
+
+        BeginPreparation(targetPosition);
+    }
+    [PunRPC]
+    private void ReceiveRushStart(Vector3 startPosition, Vector3 destination, PhotonMessageInfo info)
+    {
+        if (info.Sender != PhotonNetwork.MasterClient || !isAttacking)
+            return;
+
+        isPreparing = false;
+        rushDestination = destination;
+
+        UpdateTelegraph(startPosition, destination);
+        PlayAnimation(rushState);
     }
 
-    private void OnDisable()
+    [PunRPC]
+    private void ReceiveRushEnd(PhotonMessageInfo info)
+    {
+        if (info.Sender != PhotonNetwork.MasterClient || !isAttacking)
+            return;
+
+        CleanupAttack();
+        PlayAnimation(endState);
+    }
+
+    private void FinishAttack()
+    {
+        if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient)
+            photonView.RPC(nameof(ReceiveRushEnd), RpcTarget.Others);
+
+        CleanupAttack();
+        PlayAnimation(endState);
+    }
+
+    private void PlayAnimation(string stateName)
+    {
+        animator.CrossFadeInFixedTime(stateName, transitionTime);
+    }
+
+    private void CleanupAttack()
     {
         if (rushRoutine != null)
             StopCoroutine(rushRoutine);
 
         moveTween?.Kill();
-        RemoveTelegraph();
 
+        if (rushHitBox != null)
+            rushHitBox.enabled = false;
+
+        if (currentTelegraph != null)
+            Destroy(currentTelegraph);
+        currentTelegraph = null;
         rushRoutine = null;
         moveTween = null;
+        isPreparing = false;
         isAttacking = false;
     }
-
-    public void SetTarget(Transform newTarget)
+    private void OnDisable()
     {
-        target = newTarget;
+        if (isAttacking && PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient)
+            photonView.RPC(nameof(ReceiveRushEnd), RpcTarget.Others);
+
+        CleanupAttack();
     }
 }

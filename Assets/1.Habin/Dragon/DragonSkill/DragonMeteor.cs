@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
-public class DragonMeteor : MonoBehaviour
+[RequireComponent(typeof(PhotonView))]
+public class DragonMeteor : MonoBehaviourPun
 {
     private const float RadiusToDiameter = 2f;
 
@@ -10,26 +12,32 @@ public class DragonMeteor : MonoBehaviour
     [SerializeField] private Transform target;
     [SerializeField] private CircleTelegraph telegraphPrefab;
     [SerializeField] private MeteorProjectile meteorPrefab;
+    [SerializeField] private DragonBoss boss;
 
     [Header("운석 수")]
     [Min(1)]
     [SerializeField] private int meteorCount = 10;
+
     [Header("범위")]
     [Min(0f)]
     [SerializeField] private float scatterRadius = 10f;
-    [Header("운석 장판넓이")]
+
+    [Header("운석 장판 넓이")]
     [Min(0.01f)]
     [SerializeField] private float impactRadius = 2f;
+
     [Header("높이")]
     [Min(0.01f)]
     [SerializeField] private float spawnHeight = 15f;
 
-    [Header("예고시간")]
+    [Header("예고 시간")]
     [Min(0.01f)]
     [SerializeField] private float warningTime = 1.5f;
+
     [Header("간격")]
     [Min(0f)]
     [SerializeField] private float meteorInterval = 0.2f;
+
     [Header("장판 높이")]
     [SerializeField] private float telegraphHeightOffset = 0.03f;
 
@@ -42,9 +50,6 @@ public class DragonMeteor : MonoBehaviour
     [Min(0.01f)]
     [SerializeField] private float groundSearchDepth = 60f;
 
-    [Header("테스트")]
-    [SerializeField] private KeyCode testKey = KeyCode.M;
-
     [Header("애니메이션")]
     [SerializeField] private Animator animator;
     [SerializeField] private string summonState = "Base Layer.Fire Head 2";
@@ -53,58 +58,100 @@ public class DragonMeteor : MonoBehaviour
 
     private readonly List<CircleTelegraph> telegraphs = new List<CircleTelegraph>();
     private readonly List<MeteorProjectile> meteors = new List<MeteorProjectile>();
-
     private Coroutine attackRoutine;
     private bool isAttacking;
-
     public bool IsAttacking => isAttacking;
+    private bool HasAuthority => !PhotonNetwork.InRoom || PhotonNetwork.IsMasterClient;
+
     private void Awake()
     {
         if (animator == null)
             animator = GetComponent<Animator>();
+
+        if (boss == null)
+            boss = GetComponent<DragonBoss>();
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(testKey))
-            Meteor();
-    }
 
     public void SetTarget(Transform newTarget)
     {
         target = newTarget;
     }
-
     public void Meteor()
     {
-        if (isAttacking)
+        if (!HasAuthority || isAttacking)
             return;
 
-        if (target == null || telegraphPrefab == null || meteorPrefab == null)
+        if (!HasRequiredReferences() || target == null)
+            return;
+        Vector3[] impactPoints = CalculateImpactPoints(target.position);
+
+        if (impactPoints.Length == 0)
         {
-            Debug.LogError("Target, Telegraph Prefab, Meteor Prefab을 연결하세요.", this);
             return;
         }
+
+        BeginMeteor(impactPoints);
+
+        if (PhotonNetwork.InRoom)
+            photonView.RPC(nameof(ReceiveMeteor), RpcTarget.Others, transform.position, transform.rotation, impactPoints);
+    }
+    private bool HasRequiredReferences()
+    {
+        if (animator != null && boss != null && telegraphPrefab != null && meteorPrefab != null)
+            return true;
+
+        return false;
+    }
+    private Vector3[] CalculateImpactPoints(Vector3 center)
+    {
+        List<Vector3> impactPoints = new List<Vector3>();
+
+        for (int i = 0; i < meteorCount; i++)
+        {
+            Vector2 randomOffset = Random.insideUnitCircle * scatterRadius;
+            Vector3 candidate = center + new Vector3(randomOffset.x, 0f, randomOffset.y);
+            Vector3 rayOrigin = candidate + Vector3.up * groundSearchHeight;
+
+            if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, groundSearchDepth, groundLayers, QueryTriggerInteraction.Ignore))
+                impactPoints.Add(hit.point);
+        }
+
+        return impactPoints.ToArray();
+    }
+    [PunRPC]
+    private void ReceiveMeteor(Vector3 bossPosition, Quaternion bossRotation, Vector3[] impactPoints, PhotonMessageInfo info)
+    {
+        if (info.Sender != PhotonNetwork.MasterClient || !isActiveAndEnabled)
+            return;
+
+        if (!HasRequiredReferences())
+            return;
+
+        transform.SetPositionAndRotation(bossPosition, bossRotation);
+
+        BeginMeteor(impactPoints);
+    }
+    private void BeginMeteor(Vector3[] impactPoints)
+    {
+        CleanupAttack();
 
         isAttacking = true;
         animator.CrossFadeInFixedTime(summonState, transitionTime);
 
-        // 공격 시작 순간의 어글자 위치를 중심으로 고정합니다.
-        Vector3 center = target.position;
-        attackRoutine = StartCoroutine(MeteorRoutine(center));
+        attackRoutine = StartCoroutine(MeteorRoutine(impactPoints));
     }
 
-    private IEnumerator MeteorRoutine(Vector3 center)
+    private IEnumerator MeteorRoutine(Vector3[] impactPoints)
     {
-        for (int i = 0; i < meteorCount; i++)
+        for (int i = 0; i < impactPoints.Length; i++)
         {
-            CreateWarning(center);
+            CreateWarning(impactPoints[i]);
 
-            if (i < meteorCount - 1 && meteorInterval > 0f)
+            if (i < impactPoints.Length - 1 && meteorInterval > 0f)
                 yield return new WaitForSeconds(meteorInterval);
         }
 
-        // 모든 장판과 운석이 사라질 때까지 기다립니다.
         while (true)
         {
             telegraphs.RemoveAll(item => item == null);
@@ -118,28 +165,16 @@ public class DragonMeteor : MonoBehaviour
 
         isAttacking = false;
         attackRoutine = null;
-
-        Debug.Log("운석 공격 종료", this);
     }
 
-    private void CreateWarning(Vector3 center)
+    private void CreateWarning(Vector3 impactPoint)
     {
-        Vector2 randomOffset = Random.insideUnitCircle * scatterRadius;
-        Vector3 candidate = center + new Vector3(randomOffset.x, 0f, randomOffset.y);
-        Vector3 rayOrigin = candidate + Vector3.up * groundSearchHeight;
-
-        if (!Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, groundSearchDepth, groundLayers, QueryTriggerInteraction.Ignore))
-            return;
-
-        Vector3 impactPoint = hit.point;
-
         CircleTelegraph telegraph = Instantiate(telegraphPrefab, impactPoint + Vector3.up * telegraphHeightOffset, Quaternion.identity);
 
         float diameter = impactRadius * RadiusToDiameter;
         telegraph.transform.localScale = new Vector3(diameter, 1f, diameter);
 
         telegraphs.Add(telegraph);
-
         telegraph.Play(warningTime, () => SpawnMeteor(telegraph, impactPoint));
     }
 
@@ -153,10 +188,23 @@ public class DragonMeteor : MonoBehaviour
         Vector3 spawnPosition = impactPoint + Vector3.up * spawnHeight;
         MeteorProjectile meteor = Instantiate(meteorPrefab, spawnPosition, Quaternion.identity);
 
+        AttackDamage attackDamage = meteor.GetComponent<AttackDamage>();
+
+        if (attackDamage != null)
+            attackDamage.SetBoss(boss);
+
         meteors.Add(meteor);
     }
 
-    private void OnDisable()
+    public void MeteorSummonEnd()
+    {
+        if (!isAttacking)
+            return;
+
+        animator.CrossFadeInFixedTime(idleState, transitionTime);
+    }
+
+    private void CleanupAttack()
     {
         isAttacking = false;
 
@@ -179,11 +227,9 @@ public class DragonMeteor : MonoBehaviour
         meteors.Clear();
         attackRoutine = null;
     }
-    public void MeteorSummonEnd()
-    {
-        if (!isAttacking)
-            return;
 
-        animator.CrossFadeInFixedTime(idleState, transitionTime);
+    private void OnDisable()
+    {
+        CleanupAttack();
     }
 }
