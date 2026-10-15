@@ -1,8 +1,10 @@
+using ExitGames.Client.Photon.StructWrapping;
 using Firebase.Auth;
 using Firebase.Database;
 using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
+using Unity.AppUI.UI;
 using UnityEngine;
 
 
@@ -12,6 +14,7 @@ public class LobbyUiManager : MonoBehaviourPunCallbacks
     [SerializeField] private GameObject loginPanel;
     [SerializeField] private GameObject nicknamePanel;
     [SerializeField] private GameObject lobbyPanel;
+
 
     [Header("Nickname Setup")]
     [SerializeField] private TMP_InputField nicknameInputField;
@@ -193,7 +196,7 @@ public class LobbyUiManager : MonoBehaviourPunCallbacks
 
     [Header("클래스 선택 (임시 보관함)")]
 
-    private int currentSelectedClassIndex = -1;
+    private int currentSelectedClassIndex = -1; // 기본값
 
     public void SetTemporaryClassIndex(int index)
     {
@@ -205,6 +208,10 @@ public class LobbyUiManager : MonoBehaviourPunCallbacks
 
     public void OnClickSaveClassType()
     {
+
+        PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue("ClassType", out object value);
+
+        currentSelectedClassIndex = (int)value;
         // 만약 플레이어가 아무것도 안 고르고 Save를 눌렀을 때 예외 방어
         if (currentSelectedClassIndex == -1)
         {
@@ -219,13 +226,14 @@ public class LobbyUiManager : MonoBehaviourPunCallbacks
             { "ClassType", currentSelectedClassIndex }
         };
 
-        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+        //PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+        OnClickCloseClassSelectPanel();
 
         Debug.Log($"[네트워크] 서버 장부 최종 등록 완료! 내 직업 번호: {currentSelectedClassIndex}");
     }
 
 
-    [Header("Class Selection Panel Setup")]
+    [Header("클래스 선택 패널 셋업")]
     [SerializeField] private GameObject classSelectPanel;
 
     public void OnClickCloseClassSelectPanel()
@@ -241,5 +249,19 @@ public class LobbyUiManager : MonoBehaviourPunCallbacks
         }
 
         Debug.Log("[Lobby] 클래스 선택창을 닫고 로비 패널로 돌아갑니다.");
+    }
+
+    public void OnClickOpenClassSelectPanel()
+    {
+        if (classSelectPanel != null)
+        {
+            classSelectPanel.SetActive(true); // 기존 로비 패널 다시 켜기
+        }
+
+        if (lobbyPanel != null)
+        {
+            lobbyPanel.SetActive(false); // 클래스 선택창 끄기
+        }
+
     }
 }

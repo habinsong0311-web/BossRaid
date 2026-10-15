@@ -27,32 +27,40 @@ public class ClassSelectCard : MonoBehaviour
         
         statsText.text = $"Power : {attackPower} | HP : {maxHp} / MP : {maxMp}";
 
+        Hashtable props = new Hashtable { { "ClassType", -1 } };
+
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+
         UpdateButtonUI();
     }
 
 
     public void OnClickSelect()
     {
-        isSelected = !isSelected;
-
-        if (isSelected)
+        PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue("ClassType", out object value);
+        if((int)value == -1 || (int)value == classIndex)
         {
-            Hashtable props = new Hashtable { { "ClassType", classIndex } };
-            
-            PhotonNetwork.LocalPlayer.SetCustomProperties(props);
-            
-            Debug.Log($"[로비] {className} 클래스 선택! 장부 저장 완료.");
-        }
-        else
-        {
-            Hashtable props = new Hashtable { { "ClassType", -1 } };
-            
-            PhotonNetwork.LocalPlayer.SetCustomProperties(props);
-            
-            Debug.Log($"[로비] {className} 클래스 선택 취소.");
-        }
+            isSelected = !isSelected;
 
-        UpdateButtonUI();
+            if (isSelected)
+            {
+                Hashtable props = new Hashtable { { "ClassType", classIndex } };
+            
+                PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+            
+                Debug.Log($"[로비] {className} 클래스 선택! 장부 저장 완료.");
+            }
+            else
+            {
+                Hashtable props = new Hashtable { { "ClassType", -1 } };
+            
+                PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+            
+                Debug.Log($"[로비] {className} 클래스 선택 취소.");
+            }
+
+            UpdateButtonUI();
+        }
     }
 
     private void UpdateButtonUI()

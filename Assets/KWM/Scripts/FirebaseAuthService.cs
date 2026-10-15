@@ -25,6 +25,7 @@ public class FirebaseAuthService : MonoBehaviour
         if(Auth.CurrentUser != null)
         {
             OnAuthChanged?.Invoke(Auth.CurrentUser);
+            Auth.SignOut();
         }
     }
 
