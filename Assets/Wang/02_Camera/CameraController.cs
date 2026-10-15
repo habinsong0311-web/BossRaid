@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Serialization;
-using static InputManager;
 
 /*///////////////////////////////////////////
                 CameraController
@@ -21,19 +20,21 @@ public class CameraController : MonoBehaviour
     [SerializeField, Min(0.01f)] private float m_fCollisionRadius = 0.2f;
     [SerializeField] private LayerMask m_iCollisionLayers = ~0;
 
-    private Player m_refPlayer;
+    private PlayerController m_refPlayer;
+    private InputManager m_refInputManager;
     private float m_fPitch;
     private readonly RaycastHit[] m_arrCameraHits = new RaycastHit[16];
 
     private void Awake()
     {
-        m_refPlayer = m_refTarget.GetComponent<Player>();
+        m_refPlayer = m_refTarget.GetComponent<PlayerController>();
+        m_refInputManager = InputManager.m_Instance;
     }
 
     private void LateUpdate()
     {
-        if (m_Instance.HasGameplayInput)
-            m_fPitch = Mathf.Clamp(m_fPitch - m_Instance.InputInfo.Delta.y * m_fPitchSensitivity, m_fMinPitch, m_fMaxPitch);
+        if (m_refInputManager.HasGameplayInput)
+            m_fPitch = Mathf.Clamp(m_fPitch - m_refInputManager.InputInfo.Delta.y * m_fPitchSensitivity, m_fMinPitch, m_fMaxPitch);
 
         Quaternion qYaw = m_refPlayer.ViewRotation;
         Vector3 vPivot = m_refTarget.position + Vector3.up * m_fCameraLookHeight;

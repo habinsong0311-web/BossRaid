@@ -6,40 +6,29 @@ public class MeteorProjectile : MonoBehaviour
     [Header("낙하")]
     [Min(0f)]
     [SerializeField] private float fallSpeed = 30f;
-    [Header("충돌 대상")]
-    [SerializeField] private LayerMask groundLayers;
-    [SerializeField] private LayerMask playerLayers;
+
     [Header("삭제")]
+    [SerializeField] private LayerMask groundLayers;
+
     [Min(0.01f)]
     [SerializeField] private float maxLifetime = 5f;
-
-    private bool hasImpacted;
 
     private void Start()
     {
         Rigidbody rb = GetComponent<Rigidbody>();
-        SphereCollider meteorCollider = GetComponent<SphereCollider>();
 
-        meteorCollider.isTrigger = true;
         rb.useGravity = false;
         rb.linearVelocity = Vector3.down * fallSpeed;
 
+        // 바닥을 놓치더라도 계속 남아 있지 않게 합니다.
         Destroy(gameObject, maxLifetime);
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision collision)
     {
-        if (hasImpacted)
-            return;
+        int collidedLayerMask = 1 << collision.gameObject.layer;
 
-        int collidedLayerMask = 1 << other.gameObject.layer;
-        bool hitGround = (groundLayers.value & collidedLayerMask) != 0;
-        bool hitPlayer = (playerLayers.value & collidedLayerMask) != 0;
-
-        if (!hitGround && !hitPlayer)
-            return;
-
-        hasImpacted = true;
-        Destroy(gameObject);
+        if ((groundLayers.value & collidedLayerMask) != 0)
+            Destroy(gameObject);
     }
 }

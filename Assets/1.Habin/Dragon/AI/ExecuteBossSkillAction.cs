@@ -18,7 +18,6 @@ public partial class ExecuteBossSkillAction : Action
     private DragonRush rush;
     private DragonMeteor meteor;
     private BossSkillType executingSkill;
-    private DragonShockwave shockwave;
 
     protected override Status OnStart()
     {
@@ -32,10 +31,9 @@ public partial class ExecuteBossSkillAction : Action
         tailWhip = Self.Value.GetComponent<DragonTailWhip>();
         rush = Self.Value.GetComponent<DragonRush>();
         meteor = Self.Value.GetComponent<DragonMeteor>();
-        shockwave = Self.Value.GetComponent<DragonShockwave>();
 
-        if ((slam != null && slam.IsAttacking) || (tailWhip != null && tailWhip.IsAttacking) || (rush != null && rush.IsAttacking) || 
-           (shockwave != null && shockwave.IsAttacking) || (meteor!= null && meteor.IsAttacking))
+        // 다른 공격이 실행 중이면 시작하지 않습니다.
+        if ((slam != null && slam.IsAttacking) || (tailWhip != null && tailWhip.IsAttacking) || (rush != null && rush.IsAttacking))
             return Status.Failure;
 
         executingSkill = SelectedSkill.Value;
@@ -43,26 +41,18 @@ public partial class ExecuteBossSkillAction : Action
         switch (executingSkill)
         {
             case BossSkillType.Slam:
-                {
-                    if (slam == null || !slam.isActiveAndEnabled)
-                        return Status.Failure;
-                    DragonNetworkSkills networkSkills = Self.Value.GetComponent<DragonNetworkSkills>();
+                if (slam == null || !slam.isActiveAndEnabled)
+                    return Status.Failure;
 
-                    if (networkSkills == null || !networkSkills.PlaySlam())
-                        return Status.Failure;
-
-                    break;
-                }
+                slam.Slam();
+                break;
 
             case BossSkillType.TailWhip:
-                {
-                    if (tailWhip == null || !tailWhip.isActiveAndEnabled)
-                        return Status.Failure;
-                    DragonNetworkSkills networkSkills = Self.Value.GetComponent<DragonNetworkSkills>();
-                    if (networkSkills == null || !networkSkills.PlayTailWhip())
-                        return Status.Failure;
-                    break;
-                }
+                if (tailWhip == null || !tailWhip.isActiveAndEnabled)
+                    return Status.Failure;
+
+                tailWhip.TailWhip();
+                break;
 
             case BossSkillType.Rush:
                 if (rush == null || !rush.isActiveAndEnabled)
@@ -80,23 +70,12 @@ public partial class ExecuteBossSkillAction : Action
                 meteor.Meteor();
                 break;
 
-            case BossSkillType.Shockwave:
-                {
-                    if (shockwave == null || !shockwave.isActiveAndEnabled)
-                        return Status.Failure;
-
-                    DragonNetworkSkills networkSkills = Self.Value.GetComponent<DragonNetworkSkills>();
-
-                    if (networkSkills == null || !networkSkills.PlayShockwave())
-                        return Status.Failure;
-
-                    break;
-                }
-
             default:
+                // 아직 실행을 연결하지 않은 스킬입니다.
                 return Status.Failure;
         }
 
+        // 참조 누락 등으로 스킬 시작에 실패하면 기록하지 않습니다.
         if (!IsSkillRunning())
             return Status.Failure;
 
@@ -136,9 +115,6 @@ public partial class ExecuteBossSkillAction : Action
             case BossSkillType.Meteor:
                 return meteor != null && meteor.IsAttacking;
 
-            case BossSkillType.Shockwave:
-                return shockwave != null && shockwave.IsAttacking;
-
             default:
                 return false;
         }
@@ -159,9 +135,6 @@ public partial class ExecuteBossSkillAction : Action
 
             case BossSkillType.Meteor:
                 return meteor != null && meteor.isActiveAndEnabled;
-
-            case BossSkillType.Shockwave:
-                return shockwave != null && shockwave.isActiveAndEnabled;
 
             default:
                 return false;

@@ -15,5 +15,5 @@ MonoBehaviour:
   monsterName: "\uBCF4\uC2A4 \uB4DC\uB798\uACE4"
   monsterMaxHp: 100
   monsterCurrentHp: 100
-  monsterAttack: 20
+  monsterAttack: 30
   monsterDefense: 10

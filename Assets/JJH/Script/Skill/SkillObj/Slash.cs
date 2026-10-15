@@ -4,19 +4,13 @@ using UnityEngine;
 
 public class Slash : SkillBase
 {
-    public override void DamageTrigger(ITakeDamgeable target, Player player)
+    public override void DamageTrigger(Player player)
     {
         int damage =
-            Mathf.RoundToInt(player.ObjectInfo.CurrentHP
+            Mathf.RoundToInt(player.atkPoint
             * (SkillDataLoader.Instance.SkillData[Id].Value / 100f));
 
-        tAttackInfo info = new()
-        {
-            Pos = Vector3.zero,
-            Damage = damage
-        };
-
-        target.TakeDamage(info);
+        player.TakeDamage(damage);
         hitEffect.gameObject.SetActive(true);
     }
 }

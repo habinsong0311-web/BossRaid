@@ -35,7 +35,7 @@ MonoBehaviour:
   - rid: 8784441769820946973
   - rid: 8784441769820947062
   - rid: 8784441769820947159
-  m_VersionTimestamp: 639275725092036077
+  m_VersionTimestamp: 639274148174508008
   m_SerializedVersion: 3
   m_DebugInfo: {fileID: -4106027976860937109}
   m_RuntimeGraph: {fileID: 7013029970494127133}
@@ -915,7 +915,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c02bb70996b49eba31d0c206e28da24, type: 3}
   m_Name: DragonBossAI Blackboard
   m_EditorClassIdentifier: Unity.Behavior::Unity.Behavior.RuntimeBlackboardAsset
-  VersionTimestamp: 639275725090747372
+  VersionTimestamp: 639274147922157754
   AssetID:
     m_Value0: 16476732176357689526
     m_Value1: 13944849501882137400
@@ -969,7 +969,7 @@ MonoBehaviour:
           m_Value0: 14088242404862076644
           m_Value1: 8705409248735834068
         Name: AttackInterval
-        m_Value: 1.5
+        m_Value: 1
 --- !u!114 &4085521928509958214
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -991,7 +991,7 @@ MonoBehaviour:
   - rid: 8784441769820946930
   - rid: 8784441769820946946
   - rid: 8784441769820947118
-  m_VersionTimestamp: 639275725090747372
+  m_VersionTimestamp: 639274147922157754
   m_CommandBuffer:
     m_Commands: []
   m_RuntimeBlackboardAsset: {fileID: 1559476499906279882}
@@ -1047,7 +1047,7 @@ MonoBehaviour:
         Name: AttackInterval
         IsExposed: 1
         m_IsShared: 0
-        m_Value: 1.5
+        m_Value: 1
 --- !u!114 &7013029970494127133
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1080,8 +1080,8 @@ MonoBehaviour:
           rid: 8784441769820946689
         BlackboardGroupReferences: []
         Root:
-          rid: 8784441815039475803
-        m_VersionTimestamp: 639275725092036077
+          rid: 8784441769820947194
+        m_VersionTimestamp: 639274148174508008
     - rid: 8784441769820946689
       type: {class: BlackboardReference, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
@@ -1092,12 +1092,52 @@ MonoBehaviour:
       type: {class: Blackboard, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         m_Variables:
-        - rid: 8784441815039475805
-        - rid: 8784441815039475806
-        - rid: 8784441815039475807
-        - rid: 8784441815039475808
-        - rid: 8784441815039475809
-    - rid: 8784441815039475803
+        - rid: 8784441769820947175
+        - rid: 8784441769820947176
+        - rid: 8784441769820947177
+        - rid: 8784441769820947178
+        - rid: 8784441769820947179
+    - rid: 8784441769820947175
+      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 1
+          m_Value1: 0
+        Name: Self
+        m_Value: {fileID: 0}
+    - rid: 8784441769820947176
+      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 17197615105287003377
+          m_Value1: 106685577929055155
+        Name: Target
+        m_Value: {fileID: 0}
+    - rid: 8784441769820947177
+      type: {class: 'BlackboardVariable`1[[BossSkillType, Assembly-CSharp]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 11665029145854941084
+          m_Value1: 4850428255635100234
+        Name: SelectedSkill
+        m_Value: 0
+    - rid: 8784441769820947178
+      type: {class: 'BlackboardVariable`1[[BossSkillType, Assembly-CSharp]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 12991123647766144267
+          m_Value1: 4242590040481850241
+        Name: LastSkill
+        m_Value: 0
+    - rid: 8784441769820947179
+      type: {class: 'BlackboardVariable`1[[System.Single, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 14088242404862076644
+          m_Value1: 8705409248735834068
+        Name: AttackInterval
+        m_Value: 1
+    - rid: 8784441769820947194
       type: {class: Start, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         ID:
@@ -1108,10 +1148,10 @@ MonoBehaviour:
         m_Parent:
           rid: -2
         m_Child:
-          rid: 8784441815039475804
+          rid: 8784441769820947195
         Repeat: 1
         AllowMultipleRepeatsPerTick: 0
-    - rid: 8784441815039475804
+    - rid: 8784441769820947195
       type: {class: SequenceComposite, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         ID:
@@ -1120,52 +1160,12 @@ MonoBehaviour:
         Graph:
           rid: 8784441769820946688
         m_Parent:
-          rid: 8784441815039475803
+          rid: 8784441769820947194
         m_Children:
-        - rid: 8784441815039475810
-        - rid: 8784441815039475811
+        - rid: 8784441769820947196
+        - rid: 8784441769820947197
         m_RegisteredObservers: []
-    - rid: 8784441815039475805
-      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
-      data:
-        GUID:
-          m_Value0: 1
-          m_Value1: 0
-        Name: Self
-        m_Value: {fileID: 0}
-    - rid: 8784441815039475806
-      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
-      data:
-        GUID:
-          m_Value0: 17197615105287003377
-          m_Value1: 106685577929055155
-        Name: Target
-        m_Value: {fileID: 0}
-    - rid: 8784441815039475807
-      type: {class: 'BlackboardVariable`1[[BossSkillType, Assembly-CSharp]]', ns: Unity.Behavior, asm: Unity.Behavior}
-      data:
-        GUID:
-          m_Value0: 11665029145854941084
-          m_Value1: 4850428255635100234
-        Name: SelectedSkill
-        m_Value: 0
-    - rid: 8784441815039475808
-      type: {class: 'BlackboardVariable`1[[BossSkillType, Assembly-CSharp]]', ns: Unity.Behavior, asm: Unity.Behavior}
-      data:
-        GUID:
-          m_Value0: 12991123647766144267
-          m_Value1: 4242590040481850241
-        Name: LastSkill
-        m_Value: 0
-    - rid: 8784441815039475809
-      type: {class: 'BlackboardVariable`1[[System.Single, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
-      data:
-        GUID:
-          m_Value0: 14088242404862076644
-          m_Value1: 8705409248735834068
-        Name: AttackInterval
-        m_Value: 1.5
-    - rid: 8784441815039475810
+    - rid: 8784441769820947196
       type: {class: SelectRandomTargetAction, ns: , asm: Assembly-CSharp}
       data:
         ID:
@@ -1174,13 +1174,13 @@ MonoBehaviour:
         Graph:
           rid: 8784441769820946688
         m_Parent:
-          rid: 8784441815039475804
+          rid: 8784441769820947195
         Target:
-          rid: 8784441815039475806
+          rid: 8784441769820947176
         Self:
-          rid: 8784441815039475805
+          rid: 8784441769820947175
         playerTag: Player
-    - rid: 8784441815039475811
+    - rid: 8784441769820947197
       type: {class: SequenceComposite, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         ID:
@@ -1189,12 +1189,12 @@ MonoBehaviour:
         Graph:
           rid: 8784441769820946688
         m_Parent:
-          rid: 8784441815039475804
+          rid: 8784441769820947195
         m_Children:
-        - rid: 8784441815039475812
-        - rid: 8784441815039475813
+        - rid: 8784441769820947198
+        - rid: 8784441769820947199
         m_RegisteredObservers: []
-    - rid: 8784441815039475812
+    - rid: 8784441769820947198
       type: {class: MoveToTargetAction, ns: , asm: Assembly-CSharp}
       data:
         ID:
@@ -1203,19 +1203,19 @@ MonoBehaviour:
         Graph:
           rid: 8784441769820946688
         m_Parent:
-          rid: 8784441815039475811
+          rid: 8784441769820947197
         Self:
-          rid: 8784441815039475805
+          rid: 8784441769820947175
         Target:
-          rid: 8784441815039475806
+          rid: 8784441769820947176
         LastSkill:
-          rid: 8784441815039475808
+          rid: 8784441769820947178
         moveSpeed: 3
         turnSpeed: 180
         walkState: Base Layer.Walk
         idleState: Base Layer.Idle
         transitionTime: 0.1
-    - rid: 8784441815039475813
+    - rid: 8784441769820947199
       type: {class: SequenceComposite, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         ID:
@@ -1224,12 +1224,12 @@ MonoBehaviour:
         Graph:
           rid: 8784441769820946688
         m_Parent:
-          rid: 8784441815039475811
+          rid: 8784441769820947197
         m_Children:
-        - rid: 8784441815039475814
-        - rid: 8784441815039475815
+        - rid: 8784441769820947200
+        - rid: 8784441769820947201
         m_RegisteredObservers: []
-    - rid: 8784441815039475814
+    - rid: 8784441769820947200
       type: {class: SelectBossSkillAction, ns: , asm: Assembly-CSharp}
       data:
         ID:
@@ -1238,16 +1238,16 @@ MonoBehaviour:
         Graph:
           rid: 8784441769820946688
         m_Parent:
-          rid: 8784441815039475813
+          rid: 8784441769820947199
         Self:
-          rid: 8784441815039475805
+          rid: 8784441769820947175
         Target:
-          rid: 8784441815039475806
+          rid: 8784441769820947176
         SelectedSkill:
-          rid: 8784441815039475807
+          rid: 8784441769820947177
         LastSkill:
-          rid: 8784441815039475808
-    - rid: 8784441815039475815
+          rid: 8784441769820947178
+    - rid: 8784441769820947201
       type: {class: SequenceComposite, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         ID:
@@ -1256,12 +1256,12 @@ MonoBehaviour:
         Graph:
           rid: 8784441769820946688
         m_Parent:
-          rid: 8784441815039475813
+          rid: 8784441769820947199
         m_Children:
-        - rid: 8784441815039475816
-        - rid: 8784441815039475817
+        - rid: 8784441769820947202
+        - rid: 8784441769820947203
         m_RegisteredObservers: []
-    - rid: 8784441815039475816
+    - rid: 8784441769820947202
       type: {class: ExecuteBossSkillAction, ns: , asm: Assembly-CSharp}
       data:
         ID:
@@ -1270,16 +1270,16 @@ MonoBehaviour:
         Graph:
           rid: 8784441769820946688
         m_Parent:
-          rid: 8784441815039475815
+          rid: 8784441769820947201
         Self:
-          rid: 8784441815039475805
+          rid: 8784441769820947175
         Target:
-          rid: 8784441815039475806
+          rid: 8784441769820947176
         SelectedSkill:
-          rid: 8784441815039475807
+          rid: 8784441769820947177
         LastSkill:
-          rid: 8784441815039475808
-    - rid: 8784441815039475817
+          rid: 8784441769820947178
+    - rid: 8784441769820947203
       type: {class: WaitAction, ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         ID:
@@ -1288,6 +1288,6 @@ MonoBehaviour:
         Graph:
           rid: 8784441769820946688
         m_Parent:
-          rid: 8784441815039475815
+          rid: 8784441769820947201
         SecondsToWait:
-          rid: 8784441815039475809
+          rid: 8784441769820947179

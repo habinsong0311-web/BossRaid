@@ -110,14 +110,4 @@ InitTestScene*.unity*
 /[Aa]ssets/Photon/PhotonUnityNetworking/Resources/PhotonServerSettings.asset.meta
 /[Aa]ssets/Firebase/Plugins/x86_64/FirebaseCppApp-13_17_0.bundle
 /[Aa]ssets/Firebase/Plugins/x86_64/FirebaseCppApp-13_17_0.bundle.meta
-<<<<<<< Updated upstream
 /[Aa]ssets/StreamingAssets
-=======
-
-# Local Codex harness
-/AGENTS.md
-/.codex/
-/.agents/
-
-
->>>>>>> Stashed changes

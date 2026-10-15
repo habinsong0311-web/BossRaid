@@ -56,21 +56,21 @@ ModelImporter:
       curves: []
       events:
       - time: 0
-        functionName: ExecuteEvent
+        functionName: Jump
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
       - time: 0.8666667
-        functionName: ExecuteEvent
+        functionName: FinishJump
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
       - time: 0.61877936
-        functionName: ExecuteEvent
+        functionName: StayJump
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
