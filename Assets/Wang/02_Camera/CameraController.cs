@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Serialization;
+using Photon.Pun;
 using static InputManager;
 
 /*///////////////////////////////////////////
@@ -22,20 +23,26 @@ public class CameraController : MonoBehaviour
     [SerializeField] private LayerMask m_iCollisionLayers = ~0;
 
     private Player m_refPlayer;
+    private Player m_refCurPlayer;
     private float m_fPitch;
     private readonly RaycastHit[] m_arrCameraHits = new RaycastHit[16];
 
     private void Awake()
     {
         m_refPlayer = m_refTarget.GetComponent<Player>();
+        m_refCurPlayer = m_refPlayer;
     }
 
     private void LateUpdate()
     {
-        if (m_Instance.HasGameplayInput)
+        RefreshFollowTarget();
+        if (m_refCurPlayer == null)
+            return;
+
+        if (m_Instance != null && m_Instance.HasGameplayInput)
             m_fPitch = Mathf.Clamp(m_fPitch - m_Instance.InputInfo.Delta.y * m_fPitchSensitivity, m_fMinPitch, m_fMaxPitch);
 
-        Quaternion qYaw = m_refPlayer.ViewRotation;
+        Quaternion qYaw = m_refCurPlayer.ViewRotation;
         Vector3 vPivot = m_refTarget.position + Vector3.up * m_fCameraLookHeight;
         Vector3 vOffset = qYaw * Quaternion.Euler(m_fPitch, 0f, 0f)* (m_vCameraOffset - Vector3.up * m_fCameraLookHeight);
 
@@ -58,5 +65,27 @@ public class CameraController : MonoBehaviour
 
         transform.position = vPivot + vDirection * fDistance;
         transform.LookAt(vPivot);
+    }
+
+    private void RefreshFollowTarget()
+    {
+        if (m_refCurPlayer == null|| !PhotonNetwork.InRoom)
+            return;
+
+        if (m_refPlayer.IsAlive)
+            m_refCurPlayer = m_refPlayer;
+        else
+        {
+            m_refCurPlayer = m_refPlayer;
+            foreach (Player player in FindObjectsByType<Player>(FindObjectsSortMode.None))
+            {
+                if (player != m_refPlayer && player.IsAlive && player.photonView.OwnerActorNr > 0)
+                {
+                    m_refPlayer = player;
+                    break;
+                }
+            }
+        }
+        m_refTarget = m_refPlayer.transform;
     }
 }
