@@ -93,6 +93,7 @@ public sealed class Player : MonoBehaviourPunCallbacks , ITakeDamgeable , IPhoto
 
         if (m_refFSM.isActiveAndEnabled)
             m_refFSM.UpdateState();
+
     }
 
     private void FixedUpdate()
@@ -129,6 +130,9 @@ public sealed class Player : MonoBehaviourPunCallbacks , ITakeDamgeable , IPhoto
             m_refLocalCamera.GetComponent<CameraController>().RestorePlayerTarget(this);
         }
     }
+
+    public void RefreshPlayer() => RefreshPlayer(transform.position);
+
 
     public void ReceiveAnimEvent(AnimationEvent _refEvent)
     {

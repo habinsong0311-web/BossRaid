@@ -67,6 +67,15 @@ public class GameManager : MonoBehaviour
                 player.RefreshPlayer(_vSpawnPos);
         }
     }
+
+    public void RefreshPlayerAll()
+    {
+        foreach (Player player in m_listPlayer)
+        {
+            if (player != null && !player.IsAlive)
+                player.RefreshPlayer();
+        }
+    }
     
     public int GetAlivePlayerCount()
     {

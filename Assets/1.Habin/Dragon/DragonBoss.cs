@@ -194,6 +194,8 @@ public class DragonBoss : MonoBehaviourPun, ITakeDamgeable, IPunObservable
 
         if (clearPortal != null)
             clearPortal.SetActive(true);
+
+        GameManager.m_Instance.RefreshPlayerAll();
     }
     public void SetInvincible(bool value)
     {
